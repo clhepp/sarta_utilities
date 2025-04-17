@@ -1,0 +1,7 @@
+# Unused files and directories
+[U,u]nused/
+tmp/
+html/
+
+# Backups
+*.log
