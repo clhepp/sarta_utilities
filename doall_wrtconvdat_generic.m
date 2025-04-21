@@ -8,9 +8,12 @@ function [ok]=doall_wrtconvdat_generic(opts, comment, pnums, lfcow2fow);
 %
 % Input: opts [ structure]
 %       csens    = {string} ('cris', 'airs', 'iasi' 'chirp') the sensor to use.
+%       prod   = [string] year: YYYY
+%       build  = [string] monYY or monYYYY
 %       regset = [string] ('r49','saf704') which regression profile set to use.
 %       myset = {string} set1 ... set5 (set 5 is used for 5, 6 and 7)
-%       nscang: number of scan angles used by kCARTA in the OD L2S files.
+%       ftc_home = [string] path to output dir (from configuration script)
+%       nscang: number of scan angles used by kCARTA in the OD L2S files (12,14).
 %
 %    comment  = {string (max 35 char)}, comment string which will be
 %       Example: ['6 Aug 99, SRF 149 Aug99, fow, p2019']
@@ -112,6 +115,15 @@ if (length(comment) > 80)
    return
 end
 
+% Destination directory - must match original FTC configuration script:
+% check ftc_home exists and is directory
+if( exist(opts.ftc_home) ~= 7) 
+  error('destination directory does not exist');
+  return;
+else
+  FTC_HOME = opts.ftc_home;
+end
+
 % hardwire the kCARTA build
 build = opts.build; % 'jul2022'; 'may2021'; 'feb2020'; 'mar2018'; 'sep2018'; 'dec2018';
 
@@ -187,8 +199,8 @@ if(strcmp(regset,'R49'))
   end
   pnums     = [1:48]';
   comment   = [csens ' r49 400ppm H2020 ftc.14a ' build];
-  outd_pref = ['/home/chepplew/data/sarta/' prod_run ...
-               '/' lower(csens) '/' build '/'];
+%  outd_pref = ['/home/chepplew/data/sarta/' prod_run '/' lower(csens) '/' build '/'];
+  outd_pref = [FTC_HOME prod_run '/' lower(csens) '/' build '/'];
 end
 if(strcmp(regset,'SAF704'))
   %dpath   = '/home/sergio/MATLABCODE/REGR_PROFILES/RUN_KCARTA/SAF704/';
@@ -199,8 +211,8 @@ if(strcmp(regset,'SAF704'))
              'save_SAF_704_profiles_29-Apr-2016_1100mb_400ppmv_unitemis.op.rtp'];
   pnums = [1:703]';
   comment = [csens ' SAF704 400ppm CO2 H2016'];
-  outd_pref = ['/home/chepplew/data/sarta/' prod_run ...
-               '/' lower(csens) '/' build '/'];
+%  outd_pref = ['/home/chepplew/data/sarta/' prod_run '/' lower(csens) '/' build '/'];
+  outd_pref = [FTC_HOME prod_run '/' lower(csens) '/' build '/'];
 end
 
 switch myset
