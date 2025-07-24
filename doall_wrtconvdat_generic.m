@@ -1,4 +1,4 @@
-function [ok]=doall_wrtconvdat_generic(opts, comment, pnums, lfcow2fow);
+function [ok]=doall_wrtconvdat_generic(opts, comment, pnums, lfcow2fow, JOB);
 
 % function [ok]=doall_wrtconvdat(comment, pnums, rtpfile, matfile, outfile,lfcow2fow);
 %
@@ -7,13 +7,16 @@ function [ok]=doall_wrtconvdat_generic(opts, comment, pnums, lfcow2fow);
 % One output file per profile. Used by fitftc.
 %
 % Input: opts [ structure]
-%       csens    = {string} ('cris', 'airs', 'iasi' 'chirp') the sensor to use.
+%       csens    = {string} ('cris_hr', 'cris_lr", 'airs_l1b', 'airs_l1c','iasi' 'chirp','airs_pbl)
+%                            the sensor to use.
 %       prod   = [string] year: YYYY
 %       build  = [string] monYY or monYYYY
-%       regset = [string] ('r49','saf704') which regression profile set to use.
+%       regset = [string] ('r49','saf704','ecm83') which regression profile set to use.
 %       myset = {string} set1 ... set5 (set 5 is used for 5, 6 and 7)
 %       ftc_home = [string] path to output dir (from configuration script)
 %       nscang: number of scan angles used by kCARTA in the OD L2S files (12,14).
+%       JOB = optional argument, leave it out for testing (it will be set to "pnums")   SSM change
+%             else it gets sent in using clust_doall_wrtconvdat_generic.m
 %
 %    comment  = {string (max 35 char)}, comment string which will be
 %       Example: ['6 Aug 99, SRF 149 Aug99, fow, p2019']
@@ -77,9 +80,18 @@ function [ok]=doall_wrtconvdat_generic(opts, comment, pnums, lfcow2fow);
 % Jan 2025  CLH: added paths for airs_oco2_pbl modelling
 %                added opts.{sensor,prod,build,regset,myset}. for: airs_pbl
 %                for nscang=14 (from kCARTA) sets1,2,3 use 7 angles.
+% Jly 2025  SSN: added paths for ecm83 modelling : tis is really just papths to the RAW profiles, easy peasy
+%                added opts.{sensor,prod,build,regset,myset}. for: airs_pbl,ecm83
+%                have to set dpath, 
+%                for nscang=14 (from kCARTA) sets1,2,3 use 7 angles.
+%                Have created fifth argument JOB
+%                  and slightly changed loops, search for SSM change
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-addpath /home/chepplew/projects/sarta/matlabcode
+%addpath /asl/s1/chepplew/projects/sarta/matlabcode
+% cp -a /asl/s1/chepplew/projects/sarta/matlabcode/* sarta/matlabcode/  
+addpath sarta/matlabcode  
 addpath /asl/matlib/h4tools
 warning 'off';
 
@@ -99,11 +111,14 @@ allgasids(5,1:4)=[2, 3, 1, -2];     % fwoB3
 
 ok=0;
 
-if (nargin < 3 | nargin > 4)
+if (nargin < 3 | nargin > 5)
    error('Unexpected number of input arguements')
 end
 if (nargin == 3)
-   lfcow2fow = 0;
+  lfcow2fow = 0;
+  JOB = pnums;
+elseif (nargin == 4)
+  JOB = pnums;  
 end
 
 % Set nscang (8, 12 or 14 scan angles from L2S OD calcs.)
@@ -154,20 +169,22 @@ if(strcmp(csens,'AIRS_L1B')) nchan = 2378;  ichan = [1:nchan]; end
 if(strcmp(csens,'AIRS_L1C')) nchan = 2834;  ichan = [1:nchan]; end
 if(strcmp(csens,'AIRS_PBL')) nchan = 2834;  ichan = [1:nchan]; end
 if(strcmp(csens,'IASI'))     nchan = 8461;  ichan = [1:nchan]; end
-if(contains(csens,'CHIRP'))    nchan = 1702;  ichan = [1:nchan]; end
+if(contains(csens,'CHIRP'))  nchan = 1702;  ichan = [1:nchan]; end
 
 % hardwire number of layers in the L2S trans file
 nlay = 100;
 
 % check choice of regression profile set
 regset = upper(opts.regset);
-if( ~ismember(regset,{'R49','SAF704'}) )
+fprintf(1,'regset = %s \n',regset);
+if( ~ismember(regset,{'R49','SAF704','ECM83'}) )
   error('Incorrect option for regression profiles. Options are R49, SAF704');
   return
 end
 
 % Set the source directories and files:
 if(strcmp(regset,'R49'))
+  build
   switch build
     case 'jun2016'
       kpath=['/home/sergio/MATLABCODE/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
@@ -202,6 +219,7 @@ if(strcmp(regset,'R49'))
 %  outd_pref = ['/home/chepplew/data/sarta/' prod_run '/' lower(csens) '/' build '/'];
   outd_pref = [FTC_HOME prod_run '/' lower(csens) '/' build '/'];
 end
+
 if(strcmp(regset,'SAF704'))
   %dpath   = '/home/sergio/MATLABCODE/REGR_PROFILES/RUN_KCARTA/SAF704/';
   dpath=['/home/sergio/MATLABCODE/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
@@ -212,6 +230,17 @@ if(strcmp(regset,'SAF704'))
   pnums = [1:703]';
   comment = [csens ' SAF704 400ppm CO2 H2016'];
 %  outd_pref = ['/home/chepplew/data/sarta/' prod_run '/' lower(csens) '/' build '/'];
+  outd_pref = [FTC_HOME prod_run '/' lower(csens) '/' build '/'];
+end
+
+if(strcmp(regset,'ECM83'))
+  %dpath   = '/home/sergio/MATLABCODE/REGR_PROFILES/RUN_KCARTA/SAF704/';
+  dpath=['/home/sergio/MATLABCODE/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
+           'REGR49_400ppm_H2020_July2025_ECMWF83Profiles_AIRS2834_3CrIS_IASI/'];
+  rtpfile = ['/home/sergio/MATLABCODE/REGR_PROFILES_SARTA/ECMWF_83P_91L_Sept2015/' ...
+               'ecmwf_co2_400ppm_1100mb.op.rtp'];
+  pnums = [1:83]';
+  comment = [csens ' ECM83 400ppm CO2 H2020'];
   outd_pref = [FTC_HOME prod_run '/' lower(csens) '/' build '/'];
 end
 
@@ -359,8 +388,14 @@ if(contains(csens, 'CRIS'))
   end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Loop over the profiles
-for ip = [1:length(pnums)]
+%for ip = [1:length(pnums)] SSM change
+for ippp = 1:length(JOB)
+   ip = JOB(ippp);
    clear Y1 Y2 Y3 Y4 J1 J2 J3 J4 JA;
    ipnum=pnums(ip);
    disp(['processing profile ' int2str(ipnum)])
@@ -517,7 +552,8 @@ figure(4);clf; loglog(temp,prof.plevs(1:100,1),'.-');
 
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    % Re-order the ctrans layers to run top to bottom
-   if (ip ==1)
+   %if (ip == 1) SSM change
+   if (ip <= max(pnums))     
       indr       = nlay:-1:1;
       nanglaygas = nang*nlay*ngas;
       nanglay    = nang*nlay;
