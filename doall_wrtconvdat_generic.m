@@ -1,6 +1,6 @@
 function [ok]=doall_wrtconvdat_generic(opts, comment, pnums, lfcow2fow, JOB);
 
-% function [ok]=doall_wrtconvdat(comment, pnums, rtpfile, matfile, outfile,lfcow2fow);
+% function [ok] = doall_wrtconvdat(comment, pnums, rtpfile, matfile, outfile,lfcow2fow);
 %
 % Merge the matlab convolved l-to-s trans data from kcarta with the fortran profile
 % data and write out a fortran binary data.
@@ -89,24 +89,28 @@ function [ok]=doall_wrtconvdat_generic(opts, comment, pnums, lfcow2fow, JOB);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%addpath /asl/s1/chepplew/projects/sarta/matlabcode
+% addpath /asl/s1/chepplew/projects/sarta/matlabcode
 % cp -a /asl/s1/chepplew/projects/sarta/matlabcode/* sarta/matlabcode/  
+
 addpath sarta/matlabcode  
-addpath /asl/matlib/h4tools
+
+% addpath /asl/matlib/h4tools
+addpath /home/sergio/git/matlabcode/matlibSergio/matlib2025/h4tools
+
 warning 'off';
 
-%cd /asl/s1/chepplew/projects/sarta/prod_2016/CRIS/Run_trans_cris/
+% cd /asl/s1/chepplew/projects/sarta/prod_2016/CRIS/Run_trans_cris/
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Info for supported typeband
-alltypeband={'fowB1', 'fwoB1', 'fmwB2', 'fcowB3', 'fwo_bFsW'};
-allngas=    [   4,       4,       3,       5,        4    ]; 
-allgasids=zeros( length(alltypeband), max(allngas) );
-allgasids(1,1:4)=[2, 3, 1, -2];     % fowB1
-allgasids(2,1:4)=[2, 3, 1, -2];     % fwoB1
-allgasids(3,1:3)=[2, 6, 1];         % fmwB2
-allgasids(4,1:5)=[2, 5, 3, 1, -2];  % fcowB3
-allgasids(5,1:4)=[2, 3, 1, -2];     % fwoB3
+alltypeband = {'fowB1', 'fwoB1', 'fmwB2', 'fcowB3', 'fwo_bFsW'};
+allngas     = [   4,       4,       3,       5,        4    ]; 
+allgasids   = zeros( length(alltypeband), max(allngas) );
+allgasids(1,1:4) = [2, 3, 1, -2];     % fowB1
+allgasids(2,1:4) = [2, 3, 1, -2];     % fwoB1
+allgasids(3,1:3) = [2, 6, 1];         % fmwB2
+allgasids(4,1:5) = [2, 5, 3, 1, -2];  % fcowB3
+allgasids(5,1:4) = [2, 3, 1, -2];     % fwoB3
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ok=0;
@@ -182,37 +186,57 @@ if( ~ismember(regset,{'R49','SAF704','ECM83'}) )
   return
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Set the source directories and files:
-if(strcmp(regset,'R49'))
-  build
+
+iFoundBuild = -1;
+if (strcmp(regset,'R49'))
+  fprintf(1,' looking for regset = R49  build = %s \n',build)
   switch build
     case 'jun2016'
       kpath=['/home/sergio/MATLABCODE/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
-             'REGR49_400ppm_H2012_June2016/'];
+               'REGR49_400ppm_H2012_June2016/'];
+      iFoundBuild = +1;      
     case 'mar2018'
      %dpath   = '/home/sergio/MATLABCODE/REGR_PROFILES/RUN_KCARTA/REGR49_400ppm/';  
      dpath=['/home/sergio/MATLABCODE/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
-            'REGR49_400ppm_H2016_Mar2018/'];
+              'REGR49_400ppm_H2016_Mar2018/'];
+      iFoundBuild = +1;           
     case 'sep2018'  
       dpath=['/home/sergio/MATLABCODE/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
-             'REGR49_400ppm_H2016_Sept2018_AIRS2645/'];
+               'REGR49_400ppm_H2016_Sept2018_AIRS2645/'];
+      iFoundBuild = +1;            
     case 'dec2018' 
       dpath=['/home/sergio/MATLABCODE/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
-             'REGR49_400ppm_H2016_Dec2018_AIRS2834/'];  
+               'REGR49_400ppm_H2016_Dec2018_AIRS2834/'];
+      iFoundBuild = +1;            
     case 'feb2020'
       dpath=['/home/sergio/MATLABCODE/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
-             'REGR49_400ppm_H2016_Feb2020_AIRS2834_CHIRP/'];
+               'REGR49_400ppm_H2016_Feb2020_AIRS2834_CHIRP/'];
+      iFoundBuild = +1;            
     case 'may2021'
       dpath=['/home/sergio/MATLABCODE/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
-             'REGR49_400ppm_H2016_May2021_AIRS2834_3CrIS_IASI/'];
+               'REGR49_400ppm_H2016_May2021_AIRS2834_3CrIS_IASI/'];
+      iFoundBuild = +1;            
     case 'jul2022'
       dpath=['/home/sergio/MATLABCODE/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
              'REGR49_400ppm_H2020_July2022_AIRS2834_3CrIS_IASI/'];
       rtpfile   = [dpath 'regr49_1100_400ppm_unitemiss.op.rtp'];
+      iFoundBuild = +1;            
     case 'jan2025a'    % AIRS_OCO2_PBL new LAYER version
       dpath=['/home/sergio/MATLABCODE_Git/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
              'REGR49_400ppm_H2020_Jan2025_PBL_AIRS2834_3CrIS_IASI/'];
       rtpfile   = [dpath 'regr49_pbl.op.rtp'];
+      iFoundBuild = +1;            
+    case 'apr2026'    % AIRS 100  new LAYER version
+      rdpath=['/home/sergio/git/matlabcode/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
+		'REGR49_400ppm_H2024_Mar2026_AIRS2834_3CrIS_IASI/'];
+      rtpfile   = [rdpath 'regr49_1100_400ppm_unitemiss.op.rtp'];      
+      dpath = [rdpath '/BREAKOUTS/'];
+      iFoundBuild = +1;            
   end
   pnums     = [1:48]';
   comment   = [csens ' r49 400ppm H2020 ftc.14a ' build];
@@ -231,6 +255,7 @@ if(strcmp(regset,'SAF704'))
   comment = [csens ' SAF704 400ppm CO2 H2016'];
 %  outd_pref = ['/home/chepplew/data/sarta/' prod_run '/' lower(csens) '/' build '/'];
   outd_pref = [FTC_HOME prod_run '/' lower(csens) '/' build '/'];
+  iFoundBuild = +1;        
 end
 
 if(strcmp(regset,'ECM83'))
@@ -242,7 +267,17 @@ if(strcmp(regset,'ECM83'))
   pnums = [1:83]';
   comment = [csens ' ECM83 400ppm CO2 H2020'];
   outd_pref = [FTC_HOME prod_run '/' lower(csens) '/' build '/'];
+  iFoundBuild = +1;          
 end
+
+if iFoundBuild == -1
+  fprintf(1,'nver found the regset = %s build = %s combo \n',regset,build)
+  error('please check doall_wrtconvdat_generic.m')
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 switch myset
    case 'set1'           % FWOP
@@ -603,5 +638,7 @@ fprintf(1,'lfcow2fow= %5i  ngas= %5i\n', lfcow2fow,ngas);
 
 end
 ok=1;
+
+disp('done')
 
 %%% end of function %%%

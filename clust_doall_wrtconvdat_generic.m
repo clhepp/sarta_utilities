@@ -4,9 +4,10 @@ system_slurm_stats
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% this sets tops, comment, pnums
-setting_profiles_ecm83
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%setting_profiles_ecm83
+setting_profiles_regr49
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 JOB = str2num(getenv('SLURM_ARRAY_TASK_ID'));
 
@@ -16,13 +17,13 @@ if length(JOB) == 0
 end
 
 topts.myset  = 'set1';     %% do 5 set set separatelu
-  [ok]=doall_wrtconvdat_generic(topts, comment, pnums, [], JOB);
+  [ok] = doall_wrtconvdat_generic(topts, comment, pnums, [], JOB);
 topts.myset  = 'set2';     %% do 5 set set separatelu
-  [ok]=doall_wrtconvdat_generic(topts, comment, pnums, [], JOB);
+  [ok] = doall_wrtconvdat_generic(topts, comment, pnums, [], JOB);
 topts.myset  = 'set3';     %% do 5 set set separatelu
-  [ok]=doall_wrtconvdat_generic(topts, comment, pnums, [], JOB);
+  [ok] = doall_wrtconvdat_generic(topts, comment, pnums, [], JOB);
 topts.myset  = 'set4';     %% do 5 set set separatelu
-  [ok]=doall_wrtconvdat_generic(topts, comment, pnums, [], JOB);
+  [ok] = doall_wrtconvdat_generic(topts, comment, pnums, [], JOB);
 topts.myset  = 'set5';     %% do 5 set set separatelu
-  [ok]=doall_wrtconvdat_generic(topts, comment, pnums, [], JOB);
+  [ok] = doall_wrtconvdat_generic(topts, comment, pnums, [], JOB);
 
