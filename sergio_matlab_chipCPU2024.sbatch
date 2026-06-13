@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# run this with   sbatch --array=1-83 sergio_matlab_chipCPU2024.sbatch 1
+# run this with   kleenslurm; sbatch --array=1-83 sergio_matlab_chipCPU2024.sbatch 1
+# run this with   kleenslurm; sbatch --array=1-49 sergio_matlab_chipCPU2024.sbatch 1
 
 #SBATCH --job-name=doall_wrtconvdat   ## name
 #SBATCH -N1                           ## number of nodes
@@ -12,6 +13,8 @@
 #SBATCH --account=pi_strow
 #SBATCH --qos=shared
 #SBATCH --time=0:59:00 
+
+source /home/sergio/.bashrc
 
 if [[ "$1" -eq "" ]]; then
   # this is individual clear/cld runs

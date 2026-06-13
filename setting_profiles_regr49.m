@@ -7,24 +7,33 @@ topts.prod     = '2025';
 topts.build    = 'july2025_ecm83';
 topts.regset   = 'ecm83';
 topts.ftc_home = '/asl/s1/sergio/alldata/ftcprod/'; %FTCHOME = run_create_new_production_directories.sh
+comment = 'first test of Sergio running SARTA fits';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 topts.csens    = 'airs_l1c';
 topts.prod     = '2026';
-topts.build    = 'apr2026';
+topts.build    = 'apr2026_regr49';
 topts.regset   = 'r49';
 topts.ftc_home = '/home/sergio/nogit/ftcprod/'; %% FTCHOME in run_create_new_production_directories.sh
+comment = 'Apr 2026 : running SARTA for H2024, with new LBLRTM12.17 and CKD4.3';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+topts.csens    = 'cris_hr';
+topts.prod     = '2026';
+topts.build    = 'june2026_regr49_pbl';
+topts.regset   = 'r49';
+topts.ftc_home = '/home/sergio/nogit/ftcprod/'; %% FTCHOME in run_create_new_production_directories.sh
+comment = 'June 2026 : running SARTA for H2024, LBLRTM12.17, CKD4.3, PBL SARTA CRIS';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 topts.nscang = 14; %% nowadays
                    %% 12 originally first 6 zenith for LW, bands 1,2,3, last  6 for SW bands 4,5,6,7
 
-pnums = 1:48;  % (49 is the 49 the US STD)
 pnums = 1:703; % (704 is the US STD)
 pnums = 1:83;  % (none of them are US STD, is this a mistake, I should have had 84??? we will find out)
-
-comment = 'first test of Sergio running SARTA fits';
+pnums = 1:48;  % (49 is the 49 the US STD)
 
 topts.myset  = 'set1';     %% do 5 set set separately
   % 2834 chans, into 7 sets of channels with no overlaps
