@@ -1,4 +1,7 @@
 iFoundBuild = -1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 if (strcmp(regset,'R49'))
   fprintf(1,' looking for regset = R49  build = %s \n',build)
   switch build
@@ -43,18 +46,37 @@ if (strcmp(regset,'R49'))
       rtpfile   = [rdpath 'regr49_1100_400ppm_unitemiss.op.rtp'];      
       dpath = [rdpath '/BREAKOUTS/'];
       iFoundBuild = +1;            
-    case 'june2026_regr49_pbl'    % AIRS_OCO2_PBL new LAYER new LAYER version
+    case 'june2026_regr49_pbl'    % AIRS_OCO2_PBL new LAYER new LAYER version, CRIS
       rdpath=['/umbc/xfs3/strow/sergio_test/git/matlabcode/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
 		'REGR49_400ppm_H2024_Jun2026_PBL_AIRS2834_3CrIS_IASI/'];
       rtpfile   = [rdpath 'us_std_for_pbl_breakouts400.op.rtp'];      
       dpath = [rdpath '/BREAKOUTS/'];
       iFoundBuild = +1;            
+    case 'june2026_regr49'    % AIRS 100  usual LAYER version, CRIS
+      rdpath=['/home/sergio/git/matlabcode/REGR_PROFILES_SARTA/RUN_KCARTA/' ...
+              'REGR49_400ppm_H2024_Mar2026_AIRS2834_3CrIS_IASI/'];
+      rtpfile   = [rdpath 'regr49_1100_400ppm_unitemiss.op.rtp'];
+      dpath = [rdpath '/BREAKOUTS/'];
+      iFoundBuild = +1;
+      
+    case 'aug2026_regr49_aircraft_12km'    % 12 km aircraft, AIRS
+      rdpath  = ['/umbc/xfs3/strow/sergio_test/git/matlabcode/REGR_PROFILES_SARTA/RUN_KCARTA/REGR49_400ppm_H2024_Aug2026_AIRCRAFT_12km/'];
+      rtpfile = [rdpath 'regr49_1100_with_co2_400ppm_9gases_unitemiss_aircraft_12km.op.rtp'];
+      dpath = [rdpath '/BREAKOUTS/'];
+      iFoundBuild = +1;
+      
   end
   pnums     = [1:48]';
   comment   = [csens ' r49 400ppm H2020 ftc.14a ' build];
 %  outd_pref = ['/home/chepplew/data/sarta/' prod_run '/' lower(csens) '/' build '/'];
   outd_pref = [FTC_HOME prod_run '/' lower(csens) '/' build '/'];
+
+  if iFoundBuild < 0
+    error('set_source_dir_and_rtp_files.m : strcmp(regset,R49) and iFoundBuild < 0')
+  end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if(strcmp(regset,'SAF704'))
   %dpath   = '/home/sergio/MATLABCODE/REGR_PROFILES/RUN_KCARTA/SAF704/';
@@ -67,8 +89,15 @@ if(strcmp(regset,'SAF704'))
   comment = [csens ' SAF704 400ppm CO2 H2016'];
 %  outd_pref = ['/home/chepplew/data/sarta/' prod_run '/' lower(csens) '/' build '/'];
   outd_pref = [FTC_HOME prod_run '/' lower(csens) '/' build '/'];
-  iFoundBuild = +1;        
+  iFoundBuild = +1;
+
+  if iFoundBuild < 0
+    error('set_source_dir_and_rtp_files.m : strcmp(regset,SAF704) and iFoundBuild < 0')
+  end
+
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if(strcmp(regset,'ECM83'))
   %dpath   = '/home/sergio/MATLABCODE/REGR_PROFILES/RUN_KCARTA/SAF704/';
@@ -79,10 +108,19 @@ if(strcmp(regset,'ECM83'))
   pnums = [1:83]';
   comment = [csens ' ECM83 400ppm CO2 H2020'];
   outd_pref = [FTC_HOME prod_run '/' lower(csens) '/' build '/'];
-  iFoundBuild = +1;          
+  iFoundBuild = +1;
+
+  if iFoundBuild < 0
+    error('set_source_dir_and_rtp_files.m : strcmp(regset,ECM83) and iFoundBuild < 0')
+  end
+
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 if iFoundBuild == -1
-  fprintf(1,'DID NOT FINDver found the regset = %s build = %s combo \n',regset,build)
-  error('please check doall_wrtconvdat_generic.m')
+  fprintf(1,'regset = %s build = %s combo \n',regset,build)
+  error('DID NOT FIND this regset/build combo ::: please check doall_wrtconvdat_generic.m')
 end

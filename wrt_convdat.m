@@ -189,6 +189,16 @@ end
 
 ijunk=fclose(fid);
 
-iok=1;
+lser = ['!ls -lt ' outname];
+eval(lser)
+
+iok=0;
+thedir = dir(outname);
+if length(thedir) == 1
+  iok = 1;
+  if thedir.bytes > 0
+    iok = 2;
+  end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%% end of function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

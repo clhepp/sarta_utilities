@@ -450,34 +450,42 @@ for ic=1:info.nchan
 end % end of loop over bands
 
 fclose(fid);
-% =====================================================
-% Write netcdf file
-% ====================================================
 
-junk = strsplit(fname,{'.'});
-fnout = [junk{1} '.nc'];
+iWrite = -1;
+if iWrite > 0
+  % =====================================================
+  % Write netcdf file
+  % ====================================================
+  
+  junk = strsplit(fname,{'.'});
+  fnout = [junk{1} '.nc'];
+  
+  nchan = info.nchan;
+  ncoef = info.ncoef;
+  nlay  = info.nlay;
+  
+  nccreate(fnout,"ichan","Dimensions",{"r",nchan}); %,"Format","Classic")
+  nccreate(fnout,"fchan","Dimensions",{"r",nchan}); %,"Format","Classic")
+  nccreate(fnout,"coef","Dimensions",{"r",nchan,"l",nlay,"c",ncoef}); %,...
+  %   "Format","Classic")
+  
+  ncwrite(fnout,"ichan",ichan);
+  ncwrite(fnout,"fchan",fchan);
+  ncwrite(fnout,"coef",coef);
+  
+  % for OPTRAN need header values: ogrid [300x1], avgpred [300x4]
+  if(set == 9)
+    nav   = info.navgpred;
+    onlay = info.nlay;
+    nccreate(fnout,"ogrid","Dimensions",{"n",onlay});
+    nccreate(fnout,"avgpred","Dimensions",{"n",onlay,"o",nav});
+    ncwrite(fnout,"ogrid", info.ogrid);
+    ncwrite(fnout,"avgpred",info.avgpred);
+  end
 
-nchan = info.nchan;
-ncoef = info.ncoef;
-nlay  = info.nlay;
-
-nccreate(fnout,"ichan","Dimensions",{"r",nchan}); %,"Format","Classic")
-nccreate(fnout,"fchan","Dimensions",{"r",nchan}); %,"Format","Classic")
-nccreate(fnout,"coef","Dimensions",{"r",nchan,"l",nlay,"c",ncoef}); %,...
-%   "Format","Classic")
-
-ncwrite(fnout,"ichan",ichan);
-ncwrite(fnout,"fchan",fchan);
-ncwrite(fnout,"coef",coef);
-
-% for OPTRAN need header values: ogrid [300x1], avgpred [300x4]
-if(set == 9)
-  nav   = info.navgpred;
-  onlay = info.nlay;
-  nccreate(fnout,"ogrid","Dimensions",{"n",onlay});
-  nccreate(fnout,"avgpred","Dimensions",{"n",onlay,"o",nav});
-  ncwrite(fnout,"ogrid", info.ogrid);
-  ncwrite(fnout,"avgpred",info.avgpred);
+  fprintf(1,'wrote out %s \n',fnout);
+else
+  disp('not writing nc file')
 end
 
 %%% end of function %%%
