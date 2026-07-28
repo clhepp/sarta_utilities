@@ -1,4 +1,4 @@
-function [ichan, fchan, coef, info] = rdcoef_wrt_netcdf(set, lmerged, fname);
+function [ichan, fchan, coef, info] = rdcoef_wrt_netcdf(set, lmerged, fname, iSet8_GasD_2_9_11_12);
 
 % function [ichan, fchan, coef, info] = rdcoef_wrt_netcdf(set, lmerged, fname);
 %
@@ -10,6 +10,8 @@ function [ichan, fchan, coef, info] = rdcoef_wrt_netcdf(set, lmerged, fname);
 %              13=HDO 11term
 %    lmerged = {integer} 0=raw (not merged), 1=merged with water continuum
 %    fname   = {string} name of binary FORTRAN data file to read
+%    iGasD_2_9_11_12 = [OPTIONAL] gasID if set = 8
+%      rather useful for ~/git/ftc_dev/compare_sarta_coeffs_tracegases_optran.m
 %
 % Output:
 %    ichan   = [nchan x 1] channel ID (JPL numbering)
@@ -269,11 +271,22 @@ if (set == 8)
    info.set=8;
    info.nlay=100;
    info.nbreakout=1;
-   info.gasid=input('Enter gas ID (CO2=2, SO2=9, NH3=11, HNO3=12)');
-%   info.gasid=[2]; % might be 2, 9, 11 or 12
+
+   % info.gasid=[2]; % might be 2, 9, 11 or 12
+   if nargin == 3
+     info.gasid=input('Enter gas ID (CO2=2 [default], SO2=9, NH3=11, HNO3=12)');
+     if length(info.gasid) == 0
+       disp('warning : you did not enter gasID so setting to 2')
+       info.gasid = 2;
+     end
+   else
+     info.gasid = iSet8_GasD_2_9_11_12;
+   end
+
    switch info.gasid
      case 2
        info.ncoef=4;              % was 4 for co2,so2
+       info.ncoef=5;              % was 4 for co2,so2       
      case 9
        info.ncoef=4;
      case 11
