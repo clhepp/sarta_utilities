@@ -17,6 +17,7 @@ addpath /home/sergio/git/matlabcode/matlibSergio/matlib2025/h4tools
 
 iVers = 1;  %% CLH PBL file
 iVers = 2;  %% SSM 12 km aircraft file
+iVers = 3;  %% SSM 20 km aircraft file
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -53,6 +54,15 @@ elseif iVers == 2
   sav.fn_txt = 'refprof_400ppm_aircraft_12km.txt';
   sav.fn_mat = 'refprof_400ppm_aircraft_12km.mat';
 
+elseif iVers == 3
+  %% input profile
+  fnr49 = '/home/sergio/git/matlabcode/REGR_PROFILES_SARTA/REGR49_PROFILES_for_kCARTA_breakouts_for_SARTA/regr49_1100_with_co2_400ppm_9gases_unitemiss_aircraft_20km.op.rtp';
+
+  %  Output path and file
+  sav.dir    = '/home/sergio/git/ftc_dev/Refs/';
+  sav.fn_txt = 'refprof_400ppm_aircraft_20km.txt';
+  sav.fn_mat = 'refprof_400ppm_aircraft_20km.mat';
+
 else
   error('unknown iVers')
 end
@@ -80,17 +90,17 @@ end
 % compare Sergio's 49th w/ Scott's:
 AVOG    = 6.02214199E+26;
 STDATM  = 1013.25;
-figure(1); clf; plot(A.data(:,4),A.data(:,1),'o-',prof.plevs(100:-1:1,49)/1013.25,[1:100],'+-'); grid on; xlabel('P [atm]');       ylabel('layer'); legend('US STD','new prof','location','best')
-figure(2); clf; plot(A.data(:,3),A.data(:,1),'o-',thick(100:-1:1),[1:100],'+-');                 grid on; xlabel('lay thick [m]'); ylabel('layer'); legend('US STD','new prof','location','best')
-figure(3); clf; plot(A.data(:,5),A.data(:,1),'o-',prof.ptemp(101:-1:1,49),[1:101],'+-');         grid on; xlabel('T [K]');         ylabel('layer'); legend('US STD','new prof','location','best')
-figure(4); clf; plot(A.data(:,2),A.data(:,1),'o-',prof.palts(101:-1:1,49),[1:101],'+-');         grid on; xlabel('lay alt [m]');   ylabel('layer'); legend('US STD','new prof','location','best')
-figure(5); clf; plot(A.data(:,6),A.data(:,1),'o-',prof.gas_2(100:-1:1,49)/AVOG,[1:100],'+-');    grid on; xlabel('CO2 molec/cm2'); ylabel('layer'); legend('US STD','new prof','location','best')
+figure(1); clf; plot(A.data(:,4),A.data(:,1),'o-',prof.plevs(100:-1:1,49)/1013.25,[1:100],'+-'); grid on; xlabel('P [atm]');       ylabel('layer'); legend('US STD','new prof','location','best'); ylim([1 100])
+figure(2); clf; plot(A.data(:,3),A.data(:,1),'o-',thick(100:-1:1),[1:100],'+-');                 grid on; xlabel('lay thick [m]'); ylabel('layer'); legend('US STD','new prof','location','best'); ylim([1 100])
+figure(3); clf; plot(A.data(:,5),A.data(:,1),'o-',prof.ptemp(101:-1:1,49),[1:101],'+-');         grid on; xlabel('T [K]');         ylabel('layer'); legend('US STD','new prof','location','best'); ylim([1 101])
+figure(4); clf; plot(A.data(:,2),A.data(:,1),'o-',prof.palts(101:-1:1,49),[1:101],'+-');         grid on; xlabel('lay alt [m]');   ylabel('layer'); legend('US STD','new prof','location','best'); ylim([1 101])
+figure(5); clf; plot(A.data(:,6),A.data(:,1),'o-',prof.gas_2(100:-1:1,49)/AVOG,[1:100],'+-');    grid on; xlabel('CO2 molec/cm2'); ylabel('layer'); legend('US STD','new prof','location','best'); ylim([1 100])
 
-figure(1); clf; plot(A.data(:,4),A.data(:,1),'o-',prof.plevs(100:-1:1,49)/1013.25,[1:100],'+-'); grid on; xlabel('P [atm]');       ylabel('layer'); legend('US STD','new prof','location','best')
-figure(2); clf; plot(A.data(:,3),A.data(:,1),'o-',thick(100:-1:1),[1:100],'+-');                 grid on; xlabel('lay thick [m]'); ylabel('layer'); legend('US STD','new prof','location','best')
-figure(3); clf; plot(A.data(:,5),A.data(:,1),'o-',prof.ptemp(101:-1:1,49),[1:101],'+-');         grid on; xlabel('T [K]');         ylabel('layer'); legend('US STD','new prof','location','best')
-figure(4); clf; plot(A.data(:,2),A.data(:,1),'o-',prof.palts(101:-1:1,49),[1:101],'+-');         grid on; xlabel('lay alt [m]');   ylabel('layer'); legend('US STD','new prof','location','best')
-figure(5); clf; plot(A.data(:,6),A.data(:,1),'o-',prof.gas_2(100:-1:1,49)/AVOG,[1:100],'+-');    grid on; xlabel('CO2 molec/cm2'); ylabel('layer'); legend('US STD','new prof','location','best')
+figure(1); clf; plot(A.data(:,4),A.data(:,1),'o-',prof.plevs(100:-1:1,49)/1013.25,[1:100],'+-'); grid on; xlabel('P [atm]');       ylabel('layer'); legend('US STD','new prof','location','best'); ylim([1 100])
+figure(2); clf; plot(A.data(:,3),A.data(:,1),'o-',thick(100:-1:1),[1:100],'+-');                 grid on; xlabel('lay thick [m]'); ylabel('layer'); legend('US STD','new prof','location','best'); ylim([1 100])
+figure(3); clf; plot(A.data(:,5),A.data(:,1),'o-',prof.ptemp(101:-1:1,49),[1:101],'+-');         grid on; xlabel('T [K]');         ylabel('layer'); legend('US STD','new prof','location','best'); ylim([1 101])
+figure(4); clf; plot(A.data(:,2),A.data(:,1),'o-',prof.palts(101:-1:1,49),[1:101],'+-');         grid on; xlabel('lay alt [m]');   ylabel('layer'); legend('US STD','new prof','location','best'); ylim([1 101])
+figure(5); clf; plot(A.data(:,6),A.data(:,1),'o-',prof.gas_2(100:-1:1,49)/AVOG,[1:100],'+-');    grid on; xlabel('CO2 molec/cm2'); ylabel('layer'); legend('US STD','new prof','location','best'); ylim([1 100])
 
 % -----------------------------------------------------------------------
 % convert pressure on levels to pressure of layer between the two levels.
@@ -103,18 +113,18 @@ prof.plays(1:100,:) = pN ./ pD;
 %%! no altitude(m)  thickness(m) pressure(atm) temp(K) fixed=CO2     H2O        O3         CO         CH4        SO2       HNO3         N2O       NH3
 %%   1     2           3           4             5       6            7         8           9         10          11        12           13       14
 figure(6);clf;semilogy(A.data(:,6),A.data(:,4)*STDATM,'o-',prof.gas_2(1:100,49)/AVOG,prof.plays(1:100,49),'+-');       grid on; xlabel('CO2 amt'); ylabel('plays [mb]'); legend('US STD','new prof','location','best')
-  grid on;set(gca,'YDir','Reverse');
+  grid on;set(gca,'YDir','Reverse'); ylim([5e-3 1100])
 %figure(7);clf;semilogy(A.data(:,6),prof.plays(100:-1:1),'o-',prof.gas_2(1:100,49)/AVOG,prof.plays(1:100,49),'+-'); grid on; xlabel('CO2 amt'); ylabel('plays [mb]'); legend('US STD','new prof','location','best')
-%  grid on;set(gca,'YDir','Reverse');
+%  grid on;set(gca,'YDir','Reverse'); ylim([5e-3 1100])
 
 figure(7);clf;semilogy(A.data(:,7),A.data(:,4)*STDATM,'o-',prof.gas_1(1:100,49)/AVOG,prof.plays(1:100,49),'+-');       grid on; xlabel('WV amt'); ylabel('plays [mb]'); legend('US STD','new prof','location','best')
-  grid on;set(gca,'YDir','Reverse');
+  grid on;set(gca,'YDir','Reverse'); ylim([5e-3 1100])
 
 figure(8);clf;semilogy(A.data(:,8),A.data(:,4)*STDATM,'o-',prof.gas_3(1:100,49)/AVOG,prof.plays(1:100,49),'+-');       grid on; xlabel('O3 amt'); ylabel('plays [mb]'); legend('US STD','new prof','location','best')
-  grid on;set(gca,'YDir','Reverse');
+  grid on;set(gca,'YDir','Reverse'); ylim([5e-3 1100])
 
 figure(9);clf;semilogy(A.data(:,5),A.data(:,4)*STDATM,'o-',prof.ptemp(1:100,49),prof.plays(1:100,49),'+-');       grid on; xlabel('T(z)'); ylabel('plays [mb]'); legend('US STD','new prof','location','best')
-  grid on;set(gca,'YDir','Reverse');
+  grid on;set(gca,'YDir','Reverse'); ylim([5e-3 1100])
 
 % -----------------------------------------------------------------
 % write a new reference profile for use w/ SARTA in text form

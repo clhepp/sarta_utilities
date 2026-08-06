@@ -6,6 +6,7 @@ lfcow2fow = [];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
+topts.satelliteORaircraft = +1;  %% this is satellite at 705 km
 topts.csens    = 'airs_l1c';
 topts.prod     = '2025';
 topts.build    = 'july2025_ecm83';
@@ -19,24 +20,7 @@ iRegrSetType = 83;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-topts.nscang = 14; %% nowadays
-                   %% 12 originally first 6 zenith for LW, bands 1,2,3, last  6 for SW bands 4,5,6,7
+set_nscanang_pnums
 
-if iRegrSetType == 703
-  pnums = 1:703; % (704 is the US STD)
-elseif iRegrSetType == 83  
-  pnums = 1:83;  % (none of them are US STD, is this a mistake, I should have had 84??? we will find out)
-elseif iRegrSetType == 49  
-  pnums = 1:48;  % (49 is the 49 the US STD)
-else
-  error('unknown iRegrSetType')
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%
-
-topts.myset  = 'set1';     %% do 5 set set separately
-  % 2834 chans, into 7 sets of channels with no overlaps
-  % band1,2,3,4,5,6,7 some channels in MW may appear in set1 and others in set2
-  %   ie they are not contiguous blocaks
-  % but set1,2,3,4,5 cover the whole 2834 channels
-
+topts.iWriteMat = +1;  %% debug,   also write mat file
+topts.iWriteMat = -1;  %% default, just write f77 binary file, default

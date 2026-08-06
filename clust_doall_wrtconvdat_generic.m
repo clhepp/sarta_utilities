@@ -5,7 +5,7 @@ system_slurm_stats
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% this sets tops, comment, pnums
 
-%setting_profiles_ecm83
+% setting_profiles_ecm83
 setting_profiles_regr49
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -15,11 +15,18 @@ disp('do not forget to set      set_source_dir_and_rtp_files ')
 disp('do not forget to set      set_source_dir_and_rtp_files ')
 
 %% kleenslurm; sbatch --array=1-49 sergio_matlab_chipCPU2024.sbatch 1
-JOB = str2num(getenv('SLURM_ARRAY_TASK_ID'));
+
+%% so that we can loop through using "loop_clust_do_kcarta_driver.m" when cluster is dead
+if ~exist('JOBB')
+  JOB = str2num(getenv('SLURM_ARRAY_TASK_ID'));
+else
+  JOB = JOBB;
+end
 
 %% JOB = 1 : 49 or 1 : 84 or 1 : 704
 if length(JOB) == 0
   JOB = 1;
+  % JOB = 2;  
 end
 
 topts.myset  = 'set1';     %% do 5 set set separatelu

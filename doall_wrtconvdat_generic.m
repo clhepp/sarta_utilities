@@ -9,6 +9,10 @@ function [ok]=doall_wrtconvdat_generic(opts, comment, pnums, lfcow2fow, JOB);
 % Input: opts [ structure]
 %       csens    = {string} ('cris_hr', 'cris_lr", 'airs_l1b', 'airs_l1c','iasi' 'chirp','airs_pbl)
 %                            the sensor to use.
+%       satelliteORaircraft = +1/-1/-9999
+%        if downlook satellite no need to worry about transmission at lay 100, typically close to 1
+%        if downlook airaft       need to worry about transmission at lay 100, in high altitude channels could be << 1
+%        if uplook ground based   need to have used lay2gnd (not lay2space) when making breakouts
 %       prod   = [string] year: YYYY
 %       build  = [string] monYY or monYYYY
 %       regset = [string] ('r49','saf704','ecm83') which regression profile set to use.
@@ -24,6 +28,7 @@ function [ok]=doall_wrtconvdat_generic(opts, comment, pnums, lfcow2fow, JOB);
 %    lfcow2fow = OPTIONAL [1 x 1] convert fcowB3 input to fowB3
 %       output? (0=no=default, 1=yes). When "yes", comment and outfile
 %       should be for fowB3.
+%    iWriteMat = -1 default/+1 to not write/write a.mat file as well
 %
 % Other local params set in script:
 %    rtpfile = {string} name of RTP file with regression data profile
@@ -80,22 +85,24 @@ function [ok]=doall_wrtconvdat_generic(opts, comment, pnums, lfcow2fow, JOB);
 % Jan 2025  CLH: added paths for airs_oco2_pbl modelling
 %                added opts.{sensor,prod,build,regset,myset}. for: airs_pbl
 %                for nscang=14 (from kCARTA) sets1,2,3 use 7 angles.
-% Jly 2025  SSN: added paths for ecm83 modelling : tis is really just papths to the RAW profiles, easy peasy
+% Jul 2025  SSM: added paths for ecm83 modelling : tis is really just paths to the RAW profiles, easy peasy
 %                added opts.{sensor,prod,build,regset,myset}. for: airs_pbl,ecm83
 %                have to set dpath, 
 %                for nscang=14 (from kCARTA) sets1,2,3 use 7 angles.
 %                Have created fifth argument JOB
 %                  and slightly changed loops, search for SSM change
-
+% Aug 2026  SSM: added satelliteORaircraft = +1/-1/-9999
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % addpath /asl/s1/chepplew/projects/sarta/matlabcode
 % cp -a /asl/s1/chepplew/projects/sarta/matlabcode/* sarta/matlabcode/  
 
+iPlot = -1;
 addpath sarta/matlabcode  
 
 % addpath /asl/matlib/h4tools
 addpath /home/sergio/git/matlabcode/matlibSergio/matlib2025/h4tools
+addpath /home/sergio/git/matlabcode
 
 warning 'off';
 
@@ -255,7 +262,21 @@ switch myset
    otherwise
      disp('no valid set');
 end
-      
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% see /home/sergio/git/matlabcode/REGR_PROFILES_SARTA/RUN_KCARTA/convolve_airs_cris.m
+% secants = [1 1.245 1.55 1.93 2.4 3.0];  %% andy gave these as a test
+% %% secants = [[1.00  1.19  1.41  1.68  1.99  2.37] [2.84  3.47  4.30  5.42  6.94  9.02]];
+% %% satzen = acos(1./secants)*180/pi
+% %%    [0   32.8244   44.8285   53.4704   59.8336   65.0428] [69.3834   73.2507   76.5523   79.3679   81.7153   83.6348]
+% %% addpath /asl/matlab2012/science/
+% %% zang=saconv( satzen,705000*ones(size(satzen)))
+% %%    [0   29.2125   39.4005   46.3424   51.1160   54.7143]  [57.4256   59.5595   61.1241   62.2388   62.9938   63.4832]
+% 
+% %% these are from http://asl.umbc.edu/pub/rta/sarta/sci.txt
+% %% first 6 are for LW and SW; last 6 are solar angles for SW
+% secants = [[1.00  1.19  1.41  1.68  1.99  2.37] [2.84  3.47  4.30  5.42  6.94  9.02]];
+
 % hardwire angles (6(8) for sets 1,2,3; 12(14) for sets 4,5,6,7) 
 % the kcarta convolved L2S were computed with these 14 angles
 secangkc = [[1.00  1.012 1.051 1.19 1.41 1.68 1.99 2.37] ...
@@ -268,6 +289,8 @@ ftcang12 = [[1 1.19 1.41 1.68 1.99 2.37] [2.84 3.47 4.30 5.42 6.94 9.02]];
 % To ulitize all fitting angles set1,2,3 use 8 angles and set4,5,6,7 + rem 6.
 ftcang14 = [[1 1.012  1.051 1.19 1.41 1.68 1.99 2.37] ...
             [2.84 3.47 4.30 5.42 6.94 9.02]];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Choose which to use and add id to output convdat file.:
 switch nscang
   case 8
@@ -346,11 +369,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Loop over the profiles
-%for ip = [1:length(pnums)] SSM change
+% for ip = [1:length(pnums)] SSM change
+% JOB is typically one element eg 49   so this loop is really    for ippp == 1:1; ip = JOB(1) = JOB; i[num = pnums(ip)    where pnums = 1:49 from setting_profiles_regr49.m
 for ippp = 1:length(JOB)
    ip = JOB(ippp);
    clear Y1 Y2 Y3 Y4 J1 J2 J3 J4 JA;
-   ipnum=pnums(ip);
+   ipnum = pnums(ip);
    disp(['processing profile ' int2str(ipnum)])
 
    %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -370,44 +394,97 @@ for ippp = 1:length(JOB)
 %   end
 %   clear djunk irow icol
 % collect the data and re-arrange before concatenating
-   if(numel(mfiles) >=1 )
-     Y1 = load([dpath mfiles{1} int2str(ipnum) '.mat']); 
+
+   if opts.satelliteORaircraft < 0
+     plevs = prof.plevs(:,length(prof.stemp));
+     plays = plevs2plays(plevs); plays = plays(1:end-1);
+     palts = prof.palts(:,length(prof.stemp));
+     dz = abs(diff(palts));
+     
+     if plevs(1) < plevs(2)
+       %% need to flip because kCARTA has TOA at layer 100
+       plevs = flipud(plevs);
+       plays = flipud(plays);
+       palts = flipud(palts);
+       dz    = flipud(dz);
+     end
+     
+     new_end_palts = max(palts) + max(dz)/1;
+     new_end_palts = max(palts) + max(dz)/10000;
+     new_end_plevs = exp(interp1(palts,log(plevs),new_end_palts,[],'extrap'));
+     new_end_plays = exp(interp1(palts(1:100),log(plays),new_end_palts,[],'extrap'));     
+     printarray([max(palts)/1000 min(plevs); palts(101)/1000 plevs(101); new_end_palts/1000 new_end_plevs],'in km and mb [max(palts) min(plevs); palts(1) plevs(1); new_end_palts new_end_plevs]')
+   end
+   
+   if(numel(mfiles) >= 1 )
+     iYnum = 1;
+     Y1 = load([dpath mfiles{1} int2str(ipnum) '.mat']);
+     if opts.satelliteORaircraft < 0     
+       interp_aircraft_plevs
+     end
      if(contains(csens,'CRIS'));  J1 = permute(Y1.(ccstr),[2 1 3]); end; 
      if(contains(csens,'AIRS'));  J1 = permute(Y1.rairs_all,[2 1 3]); end;
      if(contains(csens,'IASI'));  J1 = permute(Y1.riasi_all,[2 1 3]); end;
      if(contains(csens,'CHIRP')); J1 = permute(Y1.med_rcris_all,[2 1 3]); end;
    end;
-   if(numel(mfiles) >=2 )
-     Y2 = load([dpath mfiles{2} int2str(ipnum) '.mat']); 
+   if(numel(mfiles) >= 2 )
+     iYnum = 2;     
+     Y2 = load([dpath mfiles{2} int2str(ipnum) '.mat']);
+     if opts.satelliteORaircraft < 0          
+       interp_aircraft_plevs
+     end
      if(contains(csens,'CRIS'));  J2 = permute(Y2.(ccstr),[2 1 3]); end;
      if(contains(csens,'AIRS'));  J2 = permute(Y2.rairs_all,[2 1 3]); end;
      if(contains(csens,'IASI'));  J2 = permute(Y2.riasi_all,[2 1 3]); end;
      if(contains(csens,'CHIRP')); J2 = permute(Y2.med_rcris_all,[2 1 3]); end;
    end;
-   if(numel(mfiles) >=3 )
-     Y3 = load([dpath mfiles{3} int2str(ipnum) '.mat']); 
+   if(numel(mfiles) >= 3 )
+     iYnum = 3;     
+     Y3 = load([dpath mfiles{3} int2str(ipnum) '.mat']);
+     if opts.satelliteORaircraft < 0          
+       interp_aircraft_plevs
+     end
      if(contains(csens,'CRIS'));  J3 = permute(Y3.(ccstr),[2 1 3]); end;
      if(contains(csens,'AIRS'));  J3 = permute(Y3.rairs_all,[2 1 3]); end;
      if(contains(csens,'IASI'));  J3 = permute(Y3.riasi_all,[2 1 3]); end;
      if(contains(csens,'CHIRP')); J3 = permute(Y3.med_rcris_all,[2 1 3]); end;
    end;
    if(numel(mfiles) >= 4)
-     Y4 = load([dpath mfiles{4} int2str(ipnum) '.mat']); 
+     iYnum = 4;     
+     Y4 = load([dpath mfiles{4} int2str(ipnum) '.mat']);
+     if opts.satelliteORaircraft < 0          
+       interp_aircraft_plevs
+     end
      if(contains(csens,'CRIS'));  J4 = permute(Y4.(ccstr),[2 1 3]); end;
      if(contains(csens,'AIRS'));  J4 = permute(Y4.rairs_all,[2 1 3]); end;
      if(contains(csens,'IASI'));  J4 = permute(Y4.riasi_all,[2 1 3]); end;
      if(contains(csens,'CHIRP')); J4 = permute(Y4.med_rcris_all,[2 1 3]); end;
    end;
    if(numel(mfiles) >=5)
-     Y5 = load([dpath mfiles{5} int2str(ipnum) '.mat']); 
+     iYnum = 5;     
+     Y5 = load([dpath mfiles{5} int2str(ipnum) '.mat']);
+     if opts.satelliteORaircraft < 0          
+       interp_aircraft_plevs
+     end
      if(contains(csens,'CRIS'));  J5 = permute(Y5.(ccstr),[2 1 3]); end;
      if(contains(csens,'AIRS'));  J5 = permute(Y5.rairs_all,[2 1 3]); end;
      if(contains(csens,'IASI'));  J5 = permute(Y5.riasi_all,[2 1 3]); end;
      if(contains(csens,'CHIRP')); J5 = permute(Y5.med_rcris_all,[2 1 3]); end;
    end;
+   
    if(numel(mfiles) >=6)
-     fprintf(1,'ERROR: cant deal with more than 4 mixed paths\n'); end
+     fprintf(1,'ERROR: cant deal with more than 5 mixed paths\n');
+   end
 
+%   if opts.satelliteORaircraft < 0
+%     keyboard_nowindow
+%   end 
+   
+%%%%   if opts.satelliteORaircraft < 0
+%%%%     % keyboard_nowindow
+%%%%     interp_aircraft_plevs0   %% this is too late!!! use interp_aircraft_plevs individually as above
+%%%%   end
+   
    % Re-arrange data and concatenate.
    if(npaths == 3) JA = cat(4, J1, J2, J3); end
    if(npaths == 4) JA = cat(4, J1, J2, J3, J4); end
@@ -423,7 +500,7 @@ for ippp = 1:length(JOB)
      disp([myset ': retain ' num2str(nang) '  angles']);
      JA = JA(:, ysx, :, :);
    end
-% for Scott's fitting code must have 100 layers, Sergio's 101th layer is set to 1.
+   % for Scott's fitting code must have 100 layers, Sergio's 101th layer is set to 1.
    if(size(JA,3) == 101) 
      fprintf(1,'Original L2S files have 101 layers: truncate to 100 for fitftc\n');
      JA = JA(:,:,1:100,:);
@@ -454,16 +531,17 @@ for ippp = 1:length(JOB)
      error('mismatch in expected ngas and matfile nsets')
    end
    gasids=allgasids(ii,1:ngas);
-
-%{
-figure(2);clf;h1=semilogy(squeeze(Y3.rcris_all(1,1191,:)),prof.plevs(1:end-1,1),'.-');grid on;
-  ax=gca; ax.YDir='reverse';ylim([1 1030]);
-figure(2);clf;hold on; for i=1:19:100 plot(fchan,JA(:,1,i,1),'-');end; grid on;
-figure(2);clf;hold on; for i=1:4 plot(squeeze(JA(714,1,:,i)),[1:100],'.-');end; grid on;
-figure(2);clf;semilogy(squeeze(JA(1312,1,:,3)),prof.plevs(1:end-1,1),'.-');grid on;
-  ax=gca; ax.YDir='reverse';ylim([1 1030]);xlabel('FWO rcris.all');ylabel('pressure hPa');
-  title('convolved.kcarta.FMW.1.mat, sec=1, 1576wn');
-%}
+   
+  if iPlot > 0
+    figure(2); clf; h1 = semilogy(squeeze(Y3.rcris_all(1,1191,:)),prof.plevs(1:end-1,1),'.-');grid on;
+              ax = gca; ax.YDir='reverse'; ylim([1 1030]);
+    figure(2); clf; hold on; for i=1:19:100 plot(fchan,JA(:,1,i,1),'-');end; grid on;
+    figure(2); clf; hold on; for i=1:4      plot(squeeze(JA(714,1,:,i)),[1:100],'.-');end; grid on;
+    figure(2); clf; semilogy(squeeze(JA(1312,1,:,3)),prof.plevs(1:end-1,1),'.-');grid on;
+      ax=gca; ax.YDir='reverse';ylim([1 1030]);xlabel('FWO rcris.all');ylabel('pressure hPa');
+      title('convolved.kcarta.FMW.1.mat, sec=1, 1576wn');
+  end
+   
    %%%%%%%%%%%%%%%%%%
    % the Klayers data are in correct layer order (1st=TOA) 
    % Load temperature
@@ -475,7 +553,6 @@ figure(2);clf;semilogy(squeeze(JA(1312,1,:,3)),prof.plevs(1:end-1,1),'.-');grid 
       error('mismatch in number of layers')
    end
    temp=prof.ptemp(1:nlay,ipnum);
-
 
    %%%%%%%%%%%%%%%%%%
    % Load gas amounts
@@ -494,10 +571,12 @@ figure(2);clf;semilogy(squeeze(JA(1312,1,:,3)),prof.plevs(1:end-1,1),'.-');grid 
    end
    % Convert amount from molecules/cm^2 to kmoles/cm^2
    amount=amount/6.02214199E+26;
-%{
-figure(4);clf; loglog(amount(:,1),prof.plevs(1:100,1),'.-');  
-figure(4);clf; loglog(temp,prof.plevs(1:100,1),'.-');
-%}
+
+  if iPlot > 0
+    figure(4);clf; loglog(amount(:,1),prof.plevs(1:100,1),'.-');  
+    figure(4);clf; loglog(temp,prof.plevs(1:100,1),'.-');
+  end
+  
    % Assign dummy res and rnfwhm
    res      = zeros(nchan,1);
    rnfwhm   = zeros(nchan,1);
@@ -523,13 +602,14 @@ figure(4);clf; loglog(temp,prof.plevs(1:100,1),'.-');
       end
    end
    roctrans=JA(:,indwant)';       % [2400x2235] w/6 angs 4 paths. [6000x2235] w/12 angles 5 paths
-%{
-figure(4);clf;hold on; for i=115:120 plot(fchan,roctrans(i,:),'-');end;grid on; %near TOA
-figure(5);clf;hold on; for i=415:420 plot(fchan,roctrans(i,:),'-');end;grid on; %
-figure(6);clf;hold on; plot(roctrans(1:6:595,54),[1:100],'-');grid on;
-%}
 
-fprintf(1,'lfcow2fow= %5i  ngas= %5i\n', lfcow2fow,ngas);
+  if iPlot > 0   
+    figure(4);clf;hold on; for i=115:120 plot(fchan,roctrans(i,:),'-');end;grid on; %near TOA
+    figure(5);clf;hold on; for i=415:420 plot(fchan,roctrans(i,:),'-');end;grid on; %
+    figure(6);clf;hold on; plot(roctrans(1:6:595,54),[1:100],'-');grid on;
+  end
+
+  fprintf(1,'lfcow2fow= %5i  ngas= %5i\n', lfcow2fow,ngas);
 
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    % Write out the merged profile + transmittance data file
@@ -539,16 +619,31 @@ fprintf(1,'lfcow2fow= %5i  ngas= %5i\n', lfcow2fow,ngas);
      if(ires == 0) error('could not create directory'); end
    end
 
-   outname=[outd outf fnosffx '_' int2str(ipnum) '.dat'];
-   titlecom=[comment ' p#' int2str(ipnum)];
-   disp(['Writing data to file: ' outname]);
+   % orig vers
+   % outname   = [outd outf fnosffx '_' int2str(ipnum) '.dat'];
    
+   outname0  = [outd outf fnosffx '_' int2str(ipnum)];   
+   outname   = [outname0 '.dat'];
+   
+   titlecom  = [comment ' p#' int2str(ipnum)];
+   disp(['Writing data to file: ' outname]);
+
    if (lfcow2fow == 1 )
      [iok]=wrt_convdat_fcow2fow(outname, nang, nlay, ngas, nchan, gasids, secang,...
-     titlecom, temp, amount, fchan, ichan, res, rnfwhm, roctrans);
+				titlecom, temp, amount, fchan, ichan, res, rnfwhm, roctrans);
+     if opts.iWriteMat > 0
+       [iok]=wrt_convdat_fcow2fow_mat(outname0, nang, nlay, ngas, nchan, gasids, secang,...
+  				titlecom, temp, amount, fchan, ichan, res, rnfwhm, roctrans, mfiles);       
+     end
+     
    else
       [iok]=wrt_convdat(outname, nang, nlay, ngas, nchan, gasids, secang, ...
-        titlecom, temp, amount, fchan, ichan, res, rnfwhm, roctrans);
+			titlecom, temp, amount, fchan, ichan, res, rnfwhm, roctrans);
+      if opts.iWriteMat > 0
+        [iok]=wrt_convdat_mat(outname0, nang, nlay, ngas, nchan, gasids, secang, ...
+  			titlecom, temp, amount, fchan, ichan, res, rnfwhm, roctrans, mfiles);
+      end
+	
    end
    if (iok == 0)
       error(['Error detected writing ' outname]);
