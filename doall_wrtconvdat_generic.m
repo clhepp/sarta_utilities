@@ -377,6 +377,18 @@ for ippp = 1:length(JOB)
    ipnum = pnums(ip);
    disp(['processing profile ' int2str(ipnum)])
 
+   outname0  = [outd outf fnosffx '_' int2str(ipnum)];   
+   outname   = [outname0 '.dat'];   
+   titlecom  = [comment ' p#' int2str(ipnum)];
+   disp(['Working on data to file: ' outname]);
+   if exist(outname)
+     iDo = -1;
+     fprintf(1,'%s already exists, skipping \n',outname)
+     return
+   else
+     iDo = +1;
+   end
+
    %%%%%%%%%%%%%%%%%%%%%%%%%
    % Read in the matlab data
    % The matfile must contain:
@@ -413,7 +425,7 @@ for ippp = 1:length(JOB)
      new_end_palts = max(palts) + max(dz)/10000;
      new_end_plevs = exp(interp1(palts,log(plevs),new_end_palts,[],'extrap'));
      new_end_plays = exp(interp1(palts(1:100),log(plays),new_end_palts,[],'extrap'));     
-     printarray([max(palts)/1000 min(plevs); palts(101)/1000 plevs(101); new_end_palts/1000 new_end_plevs],'in km and mb [max(palts) min(plevs); palts(1) plevs(1); new_end_palts new_end_plevs]')
+     printarray([max(palts)/1000 min(plevs); palts(101)/1000 plevs(101); new_end_palts/1000 new_end_plevs],'aircraft : in km and mb [max(palts) min(plevs); palts(1) plevs(1); new_end_palts new_end_plevs]')
    end
    
    if(numel(mfiles) >= 1 )
@@ -609,7 +621,10 @@ for ippp = 1:length(JOB)
     figure(6);clf;hold on; plot(roctrans(1:6:595,54),[1:100],'-');grid on;
   end
 
-  fprintf(1,'lfcow2fow= %5i  ngas= %5i\n', lfcow2fow,ngas);
+  fprintf(1,'<< myset = %s >> lfcow2fow= %5i  ngas= %5i  \n', myset,lfcow2fow,ngas);
+  fprintf(1,' npaths == %2i \n',npaths)
+  fprintf(1,'   mfiles = %s \n',cell2str(mfiles))
+  fprintf(1,'   outd = %s \n',outd);
 
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    % Write out the merged profile + transmittance data file
@@ -621,11 +636,12 @@ for ippp = 1:length(JOB)
 
    % orig vers
    % outname   = [outd outf fnosffx '_' int2str(ipnum) '.dat'];
-   
+%{   
    outname0  = [outd outf fnosffx '_' int2str(ipnum)];   
    outname   = [outname0 '.dat'];
    
    titlecom  = [comment ' p#' int2str(ipnum)];
+%}
    disp(['Writing data to file: ' outname]);
 
    if (lfcow2fow == 1 )

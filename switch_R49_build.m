@@ -80,4 +80,10 @@ switch build
     rtpfile = [rdpath 'regr49_1100_with_co2_400ppm_9gases_unitemiss_aircraft_20km.op.rtp'];
     dpath = [rdpath '/BREAKOUTS/'];
     iFoundBuild = +1;
+
+  case 'oct2026_regr49_aircraft_20km_pinn'    % 20 km aircraft, AIRS, PINN try
+    rdpath  = ['/home/sergio/git/matlabcode/REGR_PROFILES_SARTA/RUN_KCARTA/JUNKTEST_PINN/'];
+    rtpfile = [rdpath 'regr49_1100_with_co2_400ppm_9gases_unitemiss_aircraft_20km.op.rtp'];
+    dpath   = [rdpath '/BREAKOUTS_PINN/'];
+    iFoundBuild = +1;
 end
